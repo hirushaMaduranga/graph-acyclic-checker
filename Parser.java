@@ -4,10 +4,13 @@
  * Module: Algorithms Coursework
  */
 
+// File parser that builds a directed graph from text input.
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+// Utility class for parsing graph files.
 public class Parser {
 
     // Read graph from a text file.
@@ -16,6 +19,7 @@ public class Parser {
     // 2) benchmark files where first line is a single integer vertex count
     public static Graph parseFile(String path) throws IOException {
         Graph graph = new Graph();
+        // Read input line by line.
         BufferedReader reader = new BufferedReader(new FileReader(path));
         String line;
         boolean firstNonEmptyLine = true;
@@ -27,11 +31,13 @@ public class Parser {
                 continue;
             }
 
+            // Split on any whitespace to get tokens.
             String[] parts = line.split("\\s+");
 
             // Benchmark files use the first line as the number of vertices.
             if (firstNonEmptyLine && parts.length == 1) {
                 int vertexCount = Integer.parseInt(parts[0]);
+                // Add all vertices so isolated nodes are included.
                 for (int i = 0; i < vertexCount; i++) {
                     graph.addVertex(i);
                 }
@@ -48,6 +54,7 @@ public class Parser {
 
             int from = Integer.parseInt(parts[0]);
             int to = Integer.parseInt(parts[1]);
+            // Add directed edge from -> to.
             graph.addEdge(from, to);
         }
 
