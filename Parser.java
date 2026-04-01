@@ -13,52 +13,59 @@ import java.io.IOException;
 // Utility class for parsing graph files.
 public class Parser {
 
-    // Read graph from a text file.
-    // Supports either:
-    // 1) plain edge pairs: u v
-    // 2) benchmark files where first line is a single integer vertex count
+    // Read graph from a text file and build the directed graph safely.
     public static Graph parseFile(String path) throws IOException {
         Graph graph = new Graph();
-        // Read input line by line.
-        BufferedReader reader = new BufferedReader(new FileReader(path));
-        String line;
         boolean firstNonEmptyLine = true;
 
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-
-            if (line.isEmpty()) {
-                continue;
-            }
-
-            // Split on any whitespace to get tokens.
-            String[] parts = line.split("\\s+");
-
-            // Benchmark files use the first line as the number of vertices.
-            if (firstNonEmptyLine && parts.length == 1) {
-                int vertexCount = Integer.parseInt(parts[0]);
-                // Add all vertices so isolated nodes are included.
-                for (int i = 0; i < vertexCount; i++) {
-                    graph.addVertex(i);
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
                 }
+
+                String[] parts = line.split("\\s+");
+
+                if (firstNonEmptyLine && parts.length == 1) {
+                    Integer vertexCount = tryParseInt(parts[0]);
+                    if (vertexCount != null && vertexCount >= 0) {
+                        // Add all vertices so isolated nodes are included.
+                        for (int i = 0; i < vertexCount; i++) {
+                            graph.addVertex(i);
+                        }
+                        firstNonEmptyLine = false;
+                        continue;
+                    }
+                }
+
                 firstNonEmptyLine = false;
-                continue;
+
+                if (parts.length < 2) {
+                    // Skip malformed lines safely.
+                    continue;
+                }
+
+                Integer from = tryParseInt(parts[0]);
+                Integer to = tryParseInt(parts[1]);
+                if (from == null || to == null) {
+                    continue;
+                }
+
+                graph.addEdge(from, to);
             }
-
-            firstNonEmptyLine = false;
-
-            if (parts.length < 2) {
-                // Ignore malformed lines safely.
-                continue;
-            }
-
-            int from = Integer.parseInt(parts[0]);
-            int to = Integer.parseInt(parts[1]);
-            // Add directed edge from -> to.
-            graph.addEdge(from, to);
         }
 
-        reader.close();
         return graph;
+    }
+
+    // Safely parse an integer; return null if parsing fails.
+    private static Integer tryParseInt(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

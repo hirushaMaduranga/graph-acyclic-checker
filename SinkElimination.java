@@ -6,48 +6,78 @@
 
 // Acyclic check using the sink elimination algorithm.
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 // Utility class for sink elimination logic.
 public class SinkElimination {
 
-    // Check whether the graph is acyclic using sink elimination.
-    public static boolean isAcyclic(Graph graph) {
-        // Work on a copy so the original graph is unchanged.
+    // Result object to return elimination details.
+    public static class Result {
+        private final boolean acyclic;
+        private final List<Integer> eliminationOrder;
+        private final int totalVertices;
+
+        public Result(boolean acyclic, List<Integer> eliminationOrder, int totalVertices) {
+            this.acyclic = acyclic;
+            this.eliminationOrder = eliminationOrder;
+            this.totalVertices = totalVertices;
+        }
+
+        public boolean isAcyclic() {
+            return acyclic;
+        }
+
+        public List<Integer> getEliminationOrder() {
+            return eliminationOrder;
+        }
+
+        public int getTotalVertices() {
+            return totalVertices;
+        }
+    }
+
+    // Run sink elimination and print steps in the required style.
+    public static Result run(Graph graph) {
         Graph workingGraph = graph.copy();
+        List<Integer> order = new ArrayList<>();
+        int totalVertices = workingGraph.getVertices().size();
+
+        System.out.println("Starting sink elimination...");
 
         while (!workingGraph.isEmpty()) {
-            // Find a sink (out-degree 0) in the current graph.
             Integer sink = findSink(workingGraph);
-
             if (sink == null) {
-                // No sink means there is a cycle.
-                System.out.println("Graph is acyclic: NO");
-                return false;
+                System.out.println("No sink found in remaining graph");
+                System.out.println("Graph is cyclic");
+                System.out.println("Elimination order: " + order);
+                System.out.println(
+                        "Summary: Removed " + order.size() + " of " + totalVertices + " vertices.");
+                return new Result(false, order, totalVertices);
             }
 
-            System.out.println("Sink found and removed: " + sink);
-            // Remove the sink and repeat on the smaller graph.
+            System.out.println("Sink found: " + sink);
+            System.out.println("Removing sink: " + sink);
+            order.add(sink);
             workingGraph.removeVertex(sink);
         }
 
-        System.out.println("Graph is acyclic: YES");
-        return true;
+        System.out.println("Graph is acyclic");
+        System.out.println("Elimination order: " + order);
+        System.out.println("Summary: Removed all vertices.");
+        return new Result(true, order, totalVertices);
     }
 
     // Find one sink (vertex with no outgoing edges).
     private static Integer findSink(Graph graph) {
-        // Use sorted order to make the output deterministic.
         Set<Integer> sortedVertices = new TreeSet<>(graph.getVertices());
-
         for (Integer vertex : sortedVertices) {
-            // A sink has out-degree 0.
             if (graph.getOutDegree(vertex) == 0) {
                 return vertex;
             }
         }
-
         return null;
     }
 }

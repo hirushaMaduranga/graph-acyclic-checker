@@ -36,7 +36,6 @@ public class Graph {
     public void addEdge(int from, int to) {
         addVertex(from);
         addVertex(to);
-        // Store the edge in the adjacency list.
         adjacency.get(from).add(to);
     }
 
@@ -45,7 +44,7 @@ public class Graph {
         return new HashSet<>(vertices);
     }
 
-    // Return a copy of the outgoing neighbours for a vertex.
+    // Return a copy of the outgoing neighbors for a vertex.
     public List<Integer> getNeighbors(int vertex) {
         return new ArrayList<>(adjacency.getOrDefault(vertex, new ArrayList<>()));
     }
@@ -60,7 +59,6 @@ public class Graph {
         vertices.remove(vertex);
         adjacency.remove(vertex);
 
-        // Remove any incoming edges that point to this vertex.
         for (List<Integer> neighbors : adjacency.values()) {
             neighbors.removeIf(v -> v == vertex);
         }
@@ -70,12 +68,10 @@ public class Graph {
     public Graph copy() {
         Graph newGraph = new Graph();
 
-        // Copy vertices first so isolated nodes are preserved.
         for (Integer vertex : vertices) {
             newGraph.addVertex(vertex);
         }
 
-        // Copy all directed edges.
         for (Integer vertex : adjacency.keySet()) {
             for (Integer neighbor : adjacency.get(vertex)) {
                 newGraph.addEdge(vertex, neighbor);
